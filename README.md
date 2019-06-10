@@ -1,5 +1,9 @@
 # Project 4: Data Lake
 
+bin/build_spark_image.sh
+bin/build_jupyter_image.sh
+bin/run_spark_stack.sh
+
 
 ### Set Up Key Pair for Master/Worker
 
