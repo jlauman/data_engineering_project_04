@@ -34,6 +34,7 @@ RUN rm -rf /root/.ssh/known_hosts &&\
     echo "worker03 \$(cat /etc/ssh/ssh_host_ecdsa_key.pub)" >> /root/.ssh/known_hosts
 
 COPY ./etc/slaves /usr/local/spark/conf/slaves
+COPY ./etc/spark-env.sh /usr/local/spark/conf/spark-env.sh
 
 CMD [ "/bin/sh" ]
 

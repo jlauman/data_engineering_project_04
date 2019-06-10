@@ -1,0 +1,68 @@
+version: '3.7'
+networks:
+  sparknet:
+    name: 'spark-net'
+services:
+  worker01:
+    image: 'local:spark'
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: '1G'
+    networks:
+      - sparknet
+    command: sh -c "/usr/sbin/sshd -D"
+  worker02:
+    image: 'local:spark'
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: '1G'
+    networks:
+      - sparknet
+    command: sh -c "/usr/sbin/sshd -D"
+  worker03:
+    image: 'local:spark'
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: '1G'
+    networks:
+      - sparknet
+    command: sh -c "/usr/sbin/sshd -D"
+  jupyter:
+    image: 'local:jupyter'
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: '1G'
+    networks:
+      - sparknet
+    ports:
+      - "4040:4040"
+      - "8888:8888"
+    volumes:
+      - $PWD/workspace:/opt/workspace
+    command: bash -c "/root/miniconda/bin/conda run -n project jupyter lab --notebook-dir=/opt/workspace --no-browser --ip=0.0.0.0 --allow-root --NotebookApp\.token=''"
+  master:
+    image: 'local:spark'
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: '1G'
+    networks:
+      - sparknet
+    ports:
+      - "8080:8080"
+    volumes:
+      - $PWD/workspace/data:/opt/data
+    depends_on:
+      - "worker01"
+      - "worker02"
+      - "worker03"
+    command: sh -c "/usr/local/spark/sbin/start-all.sh"
