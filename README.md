@@ -28,6 +28,25 @@ Also, set the Jupyter notebook password.
 Use the `bin/run_jupyter.sh` script to start and verify the Jupyter environment functions.
 
 
+### Local Download of S3 Bucket Data
+
+The local PostgreSQL prototype uses local data files. Install the AWS command line interface (cli)
+tool for the local operating system.
+
+On a Mac OS X/macOS box with homebrew installed do the following:
+
+    brew install awscli
+
+The URL for the S3 bucket data is: https://udacity-dend.s3.amazonaws.com/
+
+Run the following command to download the S3 bucket data.
+
+    aws s3 sync s3://udacity-dend/song_data ./data/song_data --no-sign-request
+    aws s3 sync s3://udacity-dend/log_data ./data/log_data --no-sign-request
+    aws s3 sync s3://udacity-dend/log_json_path.json ./data/log_json_path.json --no-sign-request
+
+
+
 ### Run Jupyter Labs
 
     bin/run_jupyter.sh

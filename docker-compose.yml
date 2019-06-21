@@ -12,6 +12,8 @@ services:
           memory: '1G'
     networks:
       - sparknet
+    volumes:
+      - $PWD/data:/opt/data
     command: sh -c "/usr/sbin/sshd -D"
   worker02:
     image: 'local:spark'
@@ -22,6 +24,8 @@ services:
           memory: '1G'
     networks:
       - sparknet
+    volumes:
+      - $PWD/data:/opt/data
     command: sh -c "/usr/sbin/sshd -D"
   worker03:
     image: 'local:spark'
@@ -32,6 +36,8 @@ services:
           memory: '1G'
     networks:
       - sparknet
+    volumes:
+      - $PWD/data:/opt/data
     command: sh -c "/usr/sbin/sshd -D"
   jupyter:
     image: 'local:jupyter'
@@ -47,6 +53,7 @@ services:
       - "8888:8888"
     volumes:
       - $PWD/workspace:/opt/workspace
+      - $PWD/data:/opt/data
     command: bash -c "/root/miniconda/bin/conda run -n project jupyter lab --notebook-dir=/opt/workspace --no-browser --ip=0.0.0.0 --allow-root --NotebookApp\.token=''"
   master:
     image: 'local:spark'
@@ -60,7 +67,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - $PWD/workspace/data:/opt/data
+      - $PWD/data:/opt/data
     depends_on:
       - "worker01"
       - "worker02"
