@@ -4,6 +4,10 @@ bin/build_spark_image.sh
 bin/build_jupyter_image.sh
 bin/run_spark_stack.sh
 
+## PySpark Reference
+
+https://s3.amazonaws.com/assets.datacamp.com/blog_assets/PySpark_Cheat_Sheet_Python.pdf
+
 
 ### Set Up Key Pair for Master/Worker
 
