@@ -7,7 +7,10 @@ bin/run_spark_stack.sh
 ## PySpark Reference
 
 https://s3.amazonaws.com/assets.datacamp.com/blog_assets/PySpark_Cheat_Sheet_Python.pdf
+https://www.qubole.com/resources/pyspark-cheatsheet/
+http://mail-archives.apache.org/mod_mbox/spark-user/201612.mbox/%3CCAFbeQtEuiioyjVy7PXfn9cXk_=ybq6hAK5ToHcmf85wPwmTbJA@mail.gmail.com%3E
 
+https://stackoverflow.com/questions/52292180/pyspark-generate-row-hash-of-specific-columns-and-add-it-as-a-new-column
 
 ### Set Up Key Pair for Master/Worker
 
