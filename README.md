@@ -26,6 +26,9 @@ spark.sparkContext._conf.getAll()
 for item in sorted(sc._conf.getAll()): print(item)
 
 
+sudo pip install git pandas pyspark configparser
+
+
 import pandas as pd
 from pyspark import SparkConf, SparkContext
 from pyspark.sql import SparkSession
