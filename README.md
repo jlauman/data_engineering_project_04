@@ -1,5 +1,50 @@
 # Project 4: Data Lake
 
+
+## AWS Configuration
+
+region: us-east-2
+
+
+aws s3 sync data/log_data/ s3://jlauman-dend-project-04/log_data
+
+aws s3 sync data/song_data/ s3://jlauman-dend-project-04/song_data
+
+
+jupyter lab --notebook-dir=workspace/
+
+Must add inbound SSH to EMR master node ec2 security group.
+
+/usr/lib/spark/bin/pyspark
+sc._conf.getAll()
+
+sudo lsof -i -P -n | grep LISTEN
+
+sc.uiWebUrl
+spark.sparkContext._conf.getAll()
+
+for item in sorted(sc._conf.getAll()): print(item)
+
+
+import pandas as pd
+from pyspark import SparkConf, SparkContext
+from pyspark.sql import SparkSession
+from pyspark.sql.types import StructType, StructField, StringType, ShortType, DoubleType, DateType
+from pyspark.sql import functions as F
+
+spark = SparkSession \
+    .builder \
+    .master('local[*]') \
+    .appName("Sparkify AWS EMR ETL") \
+    .getOrCreate()
+
+spark.newSession()
+
+print(spark)
+
+
+
+
 bin/build_spark_image.sh
 bin/build_jupyter_image.sh
 bin/run_spark_stack.sh
@@ -22,7 +67,7 @@ The Anaconda package manager is used in this solution.
 Follow the installation instruction at <https://docs.anaconda.com/anaconda/install/>.
 After the `conda` command is available the shell run the following.
 
-    conda create --name dend_project_04 python=3.7
+    conda create --name dend_project_04 python=2.7
     conda activate dend_project_04
     conda install jupyterlab pandas
     conda install pyspark
