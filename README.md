@@ -25,8 +25,8 @@ spark.sparkContext._conf.getAll()
 
 for item in sorted(sc._conf.getAll()): print(item)
 
-
-sudo pip install git pandas pyspark configparser
+sudo yum install git
+sudo pip install pandas pyspark configparser
 
 
 import pandas as pd
@@ -53,6 +53,10 @@ bin/build_jupyter_image.sh
 bin/run_spark_stack.sh
 
 ## PySpark Reference
+
+https://mapr.com/support/s/article/S3-connection-issues-in-certain-AWS-Regions?language=en_US
+
+https://community.hortonworks.com/questions/226317/spark-read-from-different-account-s3-and-write-to.html
 
 https://s3.amazonaws.com/assets.datacamp.com/blog_assets/PySpark_Cheat_Sheet_Python.pdf
 https://www.qubole.com/resources/pyspark-cheatsheet/
