@@ -12,6 +12,14 @@ os.environ['AWS_SECRET_ACCESS_KEY'] = ''
 
 
 def create_spark_session():
+    """
+    Create a new Spark session.
+
+    Creates a new Spark session that includes the hadoop-aws library to support S3 read/writes.
+
+    Returns:
+    SparkSession: spark
+    """
     spark = SparkSession \
         .builder \
         .config("spark.jars.packages", "org.apache.hadoop:hadoop-aws:2.7.0") \
@@ -20,6 +28,17 @@ def create_spark_session():
 
 
 def read_song_data(spark, input_data_path):
+    """
+    Reads song data from an S3 bucket.
+
+    Parameters:
+    spark (SparkSession): The spark session.
+    input_data_path (str): The base S3 bucket URL.
+
+    Returns:
+    d_artist_df (DataFrame): An artist dimension dataframe.
+    d_song_df (DataFrame): A song dimension dataframe.
+    """
     print('\nread_song_data...')
 
     # get filepath to song data file
@@ -55,6 +74,18 @@ def read_song_data(spark, input_data_path):
 
 
 def read_log_data(spark, input_data_path):
+    """
+    Reads song play event data from an S3 bucket.
+
+    Parameters:
+    spark (SparkSession): The spark session.
+    input_data_path (str): The base S3 bucket URL.
+
+    Returns:
+    event_df (DataFrame): A raw song play event dataframe.
+    d_user_df (DataFrame): A user dimension dataframe.
+    d_time_df (DataFrame): A time dimension dataframe.
+    """
     print('\nread_log_data...')
 
     # get filepath to log data file
@@ -69,7 +100,7 @@ def read_log_data(spark, input_data_path):
         .withColumn('start_time', F.date_format('timestamp', 'yyyyMMddHH'))
     event_df.printSchema()
 
-    # extract columns for user dimension table    
+    # extract columns for user dimension table
     d_user_df = event_df.select('userId', 'lastName', 'firstName', 'gender') \
         .dropDuplicates(['userId'])
     print('user dimension record count: ', d_user_df.count())
@@ -90,6 +121,17 @@ def read_log_data(spark, input_data_path):
 
 
 def make_songplay_data(d_artist_df, d_song_df, event_df):
+    """
+    Create the songplay fact dataframe.
+
+    Parameters:
+    d_artist_df (DataFrame): The artist dimension dataframe.
+    d_song_df (DataFrame): The song dimension dataframe.
+    event_df (DataFrame): The raw song play event dataframe.
+
+    Returns:
+    f_songplay_df (DataFrame): A songplay fact dataframe.
+    """
     print('\nmake_songplay_data...')
 
     tmp_df = d_song_df.withColumnRenamed('artist_id', 'song_artist_id')
@@ -98,7 +140,7 @@ def make_songplay_data(d_artist_df, d_song_df, event_df):
 
     comparison = [event_df.song == tmp_df.title, event_df.length.cast(ShortType()) == tmp_df.duration.cast(ShortType())]
 
-    # extract columns from joined song and log datasets to create songplays table 
+    # extract columns from joined song and log datasets to create songplays table
     # create hash of timestmap userId and song for unique songplay ID
     # year and month columns exist for paritioning parquet files
     f_songplay_df = event_df.withColumn('songplay_id', F.sha1(F.concat_ws('|', 'timestamp', 'userId', 'song'))) \
@@ -115,6 +157,17 @@ def make_songplay_data(d_artist_df, d_song_df, event_df):
 
 
 def write_d_song_df(spark, d_song_df, output_data_path):
+    """
+    Write a song dimension dataframe to an S3 path.
+
+    Parameters:
+    spark (SparkSession): The spark session.
+    d_song_df (DataFrame): The song dimension dataframe.
+    output_data_path (str): The base S3 bucket URL.
+
+    Returns:
+        None
+    """
     path = output_data_path + 'd_song_df'
     print('\nwrite_d_song_df to ' + path)
     # write songs table to parquet files partitioned by year and artist
@@ -122,11 +175,22 @@ def write_d_song_df(spark, d_song_df, output_data_path):
     # (creates too many small files)
     d_song_df.repartition(1) \
         .write \
-        .partitionBy('year') \
+        .partitionBy('year', 'month') \
         .parquet(path, mode='overwrite')
 
 
 def write_d_artist_df(spark, d_artist_df, output_data_path):
+    """
+    Write an artist dimension dataframe to an S3 path.
+
+    Parameters:
+    spark (SparkSession): The spark session.
+    d_artist_df (DataFrame): The artist dimension dataframe.
+    output_data_path (str): The base S3 bucket URL.
+
+    Returns:
+        None
+    """
     path = output_data_path + 'd_artist_df'
     print('\nwrite_d_artist_df to ' + path)
     # write artists table to parquet files
@@ -136,6 +200,17 @@ def write_d_artist_df(spark, d_artist_df, output_data_path):
 
 
 def write_d_user_df(spark, d_user_df, output_data_path):
+    """
+    Write a user dimension dataframe to an S3 path.
+
+    Parameters:
+    spark (SparkSession): The spark session.
+    d_user_df (DataFrame): The user dimension dataframe.
+    output_data_path (str): The base S3 bucket URL.
+
+    Returns:
+        None
+    """
     path = output_data_path + 'd_user_df'
     print('\nwrite_d_user_df to ' + path)
     # write users table to parquet files
@@ -145,6 +220,17 @@ def write_d_user_df(spark, d_user_df, output_data_path):
 
 
 def write_d_time_df(spark, d_time_df, output_data_path):
+    """
+    Write a time dimension dataframe to an S3 path.
+
+    Parameters:
+    spark (SparkSession): The spark session.
+    d_time_df (DataFrame): The time dimension dataframe.
+    output_data_path (str): The base S3 bucket URL.
+
+    Returns:
+        None
+    """
     path = output_data_path + 'd_time_df'
     print('\nwrite_d_time_df to ' + path)
     # write time table to parquet files partitioned by year and month
@@ -155,6 +241,17 @@ def write_d_time_df(spark, d_time_df, output_data_path):
 
 
 def write_f_songplay_df(spark, f_songplay_df, output_data_path):
+    """
+    Write a song play fact dataframe to an S3 path.
+
+    Parameters:
+    spark (SparkSession): The spark session.
+    f_songplay_df (DataFrame): The song play fact dataframe.
+    output_data_path (str): The base S3 bucket URL.
+
+    Returns:
+        None
+    """
     path = output_data_path + 'f_songplay_df'
     print('\nwrite_f_songplay_df to ' + path)
     # write songplays table to parquet files partitioned by year and month
@@ -165,13 +262,23 @@ def write_f_songplay_df(spark, f_songplay_df, output_data_path):
 
 
 def main():
+    """
+    Main entry point for ETL process.
+
+    Steps are:
+    1. Create a Spark session.
+    2. Read dataframes from S3 song data set.
+    3. Read dataframes from song play event data set.
+    4. Generate song play fact dataframe from other dataframes.
+    5. Write all dataframes to S3 output folder.
+    """
     spark = create_spark_session()
 
     input_data_path = "s3a://udacity-dend/"
 
     # use bucket in us-east (N. Virginia); this doesn't work with us-east-2 region
     output_data_path = "s3a://jlauman-project-04/output/"
-    
+
     d_artist_df, d_song_df = read_song_data(spark, input_data_path)
 
     event_df, d_user_df, d_time_df = read_log_data(spark, input_data_path)
