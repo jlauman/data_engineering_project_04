@@ -6,9 +6,6 @@ from pyspark.sql.types import StructType, StructField, StringType, ShortType, Do
 from pyspark.sql import functions as F
 
 
-config = configparser.ConfigParser()
-config.read('dl.cfg')
-
 # credentails for input (udacity-dend) bucket must be empty
 os.environ['AWS_ACCESS_KEY_ID'] = ''
 os.environ['AWS_SECRET_ACCESS_KEY'] = ''
@@ -26,7 +23,8 @@ def read_song_data(spark, input_data_path):
     print('\nread_song_data...')
 
     # get filepath to song data file
-    song_data_path = input_data_path + 'song_data/A/A/A/*.json'
+    # song_data_path = input_data_path + 'song_data/A/*/*/*.json'
+    song_data_path = input_data_path + 'song_data/*/*/*/*.json'
 
     song_schema = StructType([
         StructField("artist_id", StringType(), True),
@@ -101,9 +99,13 @@ def make_songplay_data(d_artist_df, d_song_df, event_df):
     comparison = [event_df.song == tmp_df.title, event_df.length.cast(ShortType()) == tmp_df.duration.cast(ShortType())]
 
     # extract columns from joined song and log datasets to create songplays table 
+    # create hash of timestmap userId and song for unique songplay ID
+    # year and month columns exist for paritioning parquet files
     f_songplay_df = event_df.withColumn('songplay_id', F.sha1(F.concat_ws('|', 'timestamp', 'userId', 'song'))) \
+        .withColumn('year', F.year('timestamp')) \
+        .withColumn('month', F.month('timestamp')) \
         .join(tmp_df, comparison, 'left') \
-        .select(['songplay_id', 'start_time', 'userId', 'level', 'song_id', 'artist_id', 'sessionId', 'location', 'userAgent'])
+        .select(['songplay_id', 'start_time', 'year', 'month', 'userId', 'level', 'song_id', 'artist_id', 'sessionId', 'location', 'userAgent'])
     print('songplay fact record count:', f_songplay_df.count())
 
     not_null_count = f_songplay_df.filter(F.col('song_id').isNotNull()).count()
@@ -113,53 +115,79 @@ def make_songplay_data(d_artist_df, d_song_df, event_df):
 
 
 def write_d_song_df(spark, d_song_df, output_data_path):
-    path = output_data_path + 'd_song_df.parquet'
+    path = output_data_path + 'd_song_df'
     print('\nwrite_d_song_df to ' + path)
     # write songs table to parquet files partitioned by year and artist
-    d_song_df.write.parquet(path, mode='overwrite')
-    # d_song_df.write.csv(path)
+    # d_song_df.write.partitionBy('year', 'artist_id').parquet(path, mode='overwrite')
+    d_song_df.repartition(1) \
+        .write \
+        .partitionBy('year') \
+        .parquet(path, mode='overwrite')
 
 
-def write_d_artist_df(spark, d_artist_df):
+def write_d_artist_df(spark, d_artist_df, output_data_path):
+    path = output_data_path + 'd_artist_df'
+    print('\nwrite_d_artist_df to ' + path)
     # write artists table to parquet files
-    # artists_table
-    pass
+    d_artist_df.repartition(1) \
+        .write \
+        .parquet(path, mode='overwrite')
 
 
-def write_d_user_df(spark, d_user_df):
-    pass
+def write_d_user_df(spark, d_user_df, output_data_path):
+    path = output_data_path + 'd_user_df'
+    print('\nwrite_d_user_df to ' + path)
     # write users table to parquet files
-    # artists_table
+    d_user_df.repartition(1) \
+        .write \
+        .parquet(path, mode='overwrite')
 
-def write_d_time_df(spark, d_time_df):
+
+def write_d_time_df(spark, d_time_df, output_data_path):
+    path = output_data_path + 'd_time_df'
+    print('\nwrite_d_time_df to ' + path)
     # write time table to parquet files partitioned by year and month
-    # time_table
-    pass
+    d_time_df.repartition(1) \
+        .write \
+        .partitionBy('year', 'month') \
+        .parquet(path, mode='overwrite')
 
-def write_f_songplay_df(spark, f_songplay_df):
+
+def write_f_songplay_df(spark, f_songplay_df, output_data_path):
+    path = output_data_path + 'f_songplay_df'
+    print('\nwrite_f_songplay_df to ' + path)
     # write songplays table to parquet files partitioned by year and month
-    # songplays_table
-    pass
+    f_songplay_df.repartition(1) \
+        .write \
+        .partitionBy('year', 'month') \
+        .parquet(path, mode='overwrite')
 
 
 def main():
     spark = create_spark_session()
+
     input_data_path = "s3a://udacity-dend/"
+
     # use bucket in us-east (N. Virginia); this doesn't work with us-east-2 region
-    output_data_path = "s3a://jlauman-dend-project-04-bucket2/output/"
+    output_data_path = "s3a://jlauman-project-04/output/"
     
     d_artist_df, d_song_df = read_song_data(spark, input_data_path)
 
-    # event_df, d_user_df, d_time_df = read_log_data(spark, input_data_path)
+    event_df, d_user_df, d_time_df = read_log_data(spark, input_data_path)
 
-    # f_songplay_df = make_songplay_data(d_artist_df, d_song_df, event_df)
+    f_songplay_df = make_songplay_data(d_artist_df, d_song_df, event_df)
 
-    # set credentials for S3 output bucket
+    # set credentials for S3 project output bucket
+    config = configparser.ConfigParser()
+    config.read('dl.cfg')
     os.environ['AWS_ACCESS_KEY_ID'] = config['S3']['AWS_ACCESS_KEY_ID']
     os.environ['AWS_SECRET_ACCESS_KEY'] = config['S3']['AWS_SECRET_ACCESS_KEY']
 
     write_d_song_df(spark, d_song_df, output_data_path)
-
+    write_d_artist_df(spark, d_artist_df, output_data_path)
+    write_d_user_df(spark, d_user_df, output_data_path)
+    write_d_time_df(spark, d_time_df, output_data_path)
+    write_f_songplay_df(spark, f_songplay_df, output_data_path)
 
 
 if __name__ == "__main__":
