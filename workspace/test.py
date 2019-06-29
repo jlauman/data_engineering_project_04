@@ -1,6 +1,6 @@
 import os
 import configparser
-import pandas as pd
+# import pandas as pd
 from pyspark import SparkConf, SparkContext
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StructField, StringType, ShortType, DoubleType, DateType
@@ -14,7 +14,7 @@ os.environ['AWS_SECRET_ACCESS_KEY'] = ''
 
 spark = SparkSession \
     .builder \
-    .master('local[*]') \
+    .master('yarn') \
     .appName("Sparkify AWS EMR ETL") \
     .config("spark.jars.packages", "org.apache.hadoop:hadoop-aws:2.7.0") \
     .getOrCreate()

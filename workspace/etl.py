@@ -23,7 +23,7 @@ def read_song_data(spark, input_data_path):
     print('\nread_song_data...')
 
     # get filepath to song data file
-    # song_data_path = input_data_path + 'song_data/A/A/A/*.json'
+    # song_data_path = input_data_path + 'song_data/A/*/*/*.json'
     song_data_path = input_data_path + 'song_data/*/*/*/*.json'
 
     song_schema = StructType([
@@ -115,38 +115,52 @@ def make_songplay_data(d_artist_df, d_song_df, event_df):
 
 
 def write_d_song_df(spark, d_song_df, output_data_path):
-    path = output_data_path + 'd_song_df.parquet'
+    path = output_data_path + 'd_song_df'
     print('\nwrite_d_song_df to ' + path)
     # write songs table to parquet files partitioned by year and artist
-    d_song_df.write.partitionBy('year', 'artist_id').parquet(path, mode='overwrite')
+    # d_song_df.write.partitionBy('year', 'artist_id').parquet(path, mode='overwrite')
+    d_song_df.repartition(1) \
+        .write \
+        .partitionBy('year') \
+        .parquet(path, mode='overwrite')
 
 
 def write_d_artist_df(spark, d_artist_df, output_data_path):
-    path = output_data_path + 'd_artist_df.parquet'
+    path = output_data_path + 'd_artist_df'
     print('\nwrite_d_artist_df to ' + path)
     # write artists table to parquet files
-    d_artist_df.write.parquet(path, mode='overwrite')
+    d_artist_df.repartition(1) \
+        .write \
+        .parquet(path, mode='overwrite')
 
 
 def write_d_user_df(spark, d_user_df, output_data_path):
-    path = output_data_path + 'd_user_df.parquet'
+    path = output_data_path + 'd_user_df'
     print('\nwrite_d_user_df to ' + path)
     # write users table to parquet files
-    d_user_df.write.parquet(path, mode='overwrite')
+    d_user_df.repartition(1) \
+        .write \
+        .parquet(path, mode='overwrite')
 
 
 def write_d_time_df(spark, d_time_df, output_data_path):
-    path = output_data_path + 'd_time_df.parquet'
+    path = output_data_path + 'd_time_df'
     print('\nwrite_d_time_df to ' + path)
     # write time table to parquet files partitioned by year and month
-    d_time_df.write.partitionBy('year', 'month').parquet(path, mode='overwrite')
+    d_time_df.repartition(1) \
+        .write \
+        .partitionBy('year', 'month') \
+        .parquet(path, mode='overwrite')
 
 
 def write_f_songplay_df(spark, f_songplay_df, output_data_path):
-    path = output_data_path + 'f_songplay_df.parquet'
+    path = output_data_path + 'f_songplay_df'
     print('\nwrite_f_songplay_df to ' + path)
     # write songplays table to parquet files partitioned by year and month
-    f_songplay_df.write.partitionBy('year', 'month').parquet(path, mode='overwrite')
+    f_songplay_df.repartition(1) \
+        .write \
+        .partitionBy('year', 'month') \
+        .parquet(path, mode='overwrite')
 
 
 def main():
@@ -169,10 +183,10 @@ def main():
     os.environ['AWS_ACCESS_KEY_ID'] = config['S3']['AWS_ACCESS_KEY_ID']
     os.environ['AWS_SECRET_ACCESS_KEY'] = config['S3']['AWS_SECRET_ACCESS_KEY']
 
-    # write_d_song_df(spark, d_song_df, output_data_path)
-    # write_d_artist_df(spark, d_artist_df, output_data_path)
-    # write_d_user_df(spark, d_user_df, output_data_path)
-    # write_d_time_df(spark, d_time_df, output_data_path)
+    write_d_song_df(spark, d_song_df, output_data_path)
+    write_d_artist_df(spark, d_artist_df, output_data_path)
+    write_d_user_df(spark, d_user_df, output_data_path)
+    write_d_time_df(spark, d_time_df, output_data_path)
     write_f_songplay_df(spark, f_songplay_df, output_data_path)
 
 
