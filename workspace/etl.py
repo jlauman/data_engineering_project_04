@@ -175,7 +175,7 @@ def write_d_song_df(spark, d_song_df, output_data_path):
     # (creates too many small files)
     d_song_df.repartition(1) \
         .write \
-        .partitionBy('year', 'month') \
+        .partitionBy('year') \
         .parquet(path, mode='overwrite')
 
 
