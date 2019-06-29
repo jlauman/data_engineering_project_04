@@ -1,7 +1,16 @@
 # Project 4: Data Lake
 
+The music streaming company Sparkify has grown and wants to analyze their growing history of customer
+event logs in the cloud. The current customer event logs are currently stored in an AWS S3 bucket.
+
+The ETL pipeline for this project will use a Spark cluster created using AWS EMR.
+
+The output of the `workspace/etl.py` PySpark script executed on the Spark cluster stored in the following bucket:
+
 https://s3.console.aws.amazon.com/s3/buckets/jlauman-project-04
 
+As part of the initial analysis step for this project a local Spark cluster was created using docker.
+The discussion of the local cluster set up using docker is beyond the scope of this document.
 
 
 ## Lessons Learned
@@ -16,7 +25,7 @@ Over allocate worker nodes for the Spark cluster. Better to create them and not 
 than choke processing with lack of CPU and RAM.
 
 Ensure that a job run in spark uses the correct orchestrator. I can into a scenario where I mistakenly
-installed pyspark separate from the one provided by EMR and wasted time running the ETL process only
+installed PySpark separate from the one provided by EMR and wasted time running the ETL process only
 on the master node.
 
 Understand how the Spark writer works. Without repartitioning the dataframe the default is the most
@@ -73,7 +82,7 @@ See: https://mapr.com/support/s/article/S3-connection-issues-in-certain-AWS-Regi
     HostName ec2-18-191-148-16.us-east-2.compute.amazonaws.com
     User hadoop
     PreferredAuthentications publickey
-    IdentityFile /Users/jlauman/Projects/data_engineering_project_04_secret/project_03_keypair.pem
+    IdentityFile /Users/jlauman/Projects/data_engineering_project_04_secret/project_keypair.pem
 
 8. Populate `dl.cfg` file with S3 credentials
     - Insert access key ID and secret from IAM user into `dl.cfg` file
@@ -98,6 +107,8 @@ Confirm the `output_data_path` is configured for the current S3 project bucket.
 
 
 ## PySpark Links
+
+Information on these pages was referenced while working on this project.
 
 https://community.hortonworks.com/questions/226317/spark-read-from-different-account-s3-and-write-to.html
 
