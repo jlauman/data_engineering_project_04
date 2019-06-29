@@ -118,7 +118,8 @@ def write_d_song_df(spark, d_song_df, output_data_path):
     path = output_data_path + 'd_song_df'
     print('\nwrite_d_song_df to ' + path)
     # write songs table to parquet files partitioned by year and artist
-    # d_song_df.write.partitionBy('year', 'artist_id').parquet(path, mode='overwrite')
+    # decided to not partition by artist because of problems writing in to S3 bucket
+    # (creates too many small files)
     d_song_df.repartition(1) \
         .write \
         .partitionBy('year') \
